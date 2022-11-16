@@ -108,10 +108,10 @@ Shader "WaterSimulation/WaterUrp"
 
             v2f vert (appdata v)
             {
-				float c = GradientNoise_float(v.uv, _NoiseScale) * sin(_Time.x);
-				DisplacementOut dsO = GerstnerWave(v.vertex, lerp(_Amplitude, c, _NoiseStrength), _Speed, _Length, _Time.y);
-				v.vertex = dsO.position;
-				v.normal = dsO.normal;
+		float c = GradientNoise_float(v.uv, _NoiseScale) * sin(_Time.x);
+		DisplacementOut dsO = GerstnerWave(v.vertex, lerp(_Amplitude, c, _NoiseStrength), _Speed, _Length, _Time.y);
+		v.vertex = dsO.position;
+		v.normal = dsO.normal;
 
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
