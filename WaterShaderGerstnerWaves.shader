@@ -10,6 +10,7 @@ Shader "WaterSimulation/WaterUrp"
 
 		_Speed("Speed", float) = 1
 		_Length("Length", float) = 1
+		_Phi("CofPhi", float) = 1
 			
 		_Octaves("Octaves", int) = 1
 
@@ -44,13 +45,6 @@ Shader "WaterSimulation/WaterUrp"
                 float4 vertex : SV_POSITION;
             };
 
-
-			struct Gerstner
-			{
-				float ampl;
-				float speed;
-				float length;
-			};
 
 			struct DisplacementOut
 			{
@@ -87,13 +81,13 @@ Shader "WaterSimulation/WaterUrp"
 			}
 
 
-			DisplacementOut GerstnerWave(float4 position, float ampl, float speed, float length, float time, float dir)
+			DisplacementOut GerstnerWave(float4 position, float ampl, float speed, float length, float time, float dir, float Ph)
 			{
 
 				DisplacementOut output;
 				output.position = position;
 				float cof = 2 * UNITY_PI / length;
-				float func = cof * (position.x + position.z * dir - speed * time);
+				float func = cof * (position.x + position.z * dir - speed * time + Ph);
 				output.position.x += ampl * cos(func);
 				output.position.y = ampl * sin(func);
 
@@ -105,16 +99,16 @@ Shader "WaterSimulation/WaterUrp"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-			float _Amplitude, _Speed, _Length, _NoiseStrength, _Direction;
+			float _Amplitude, _Speed, _Length, _NoiseStrength, _Direction, _Phi;
 			int _NoiseScale;
 
 
             v2f vert (appdata v)
             {
-				float c = GradientNoise_float(v.uv, _NoiseScale);
-				DisplacementOut dsO = GerstnerWave(v.vertex, lerp(_Amplitude, c, _NoiseStrength), _Speed, _Length, _Time.y, _Direction);
-				v.vertex = dsO.position;
-				v.normal = dsO.normal;
+				DisplacementOut dsO = GerstnerWave(v.vertex, _Amplitude, _Speed, _Length, _Time.y, _Direction, _Phi);
+				DisplacementOut ds1 = GerstnerWave(v.vertex, _Amplitude * 0.7, _Speed * 0.6, _Length * 0.3, _Time.y, _Direction * 0.6, _Phi * 0.3);
+				v.vertex = dsO.position + ds1.position;
+				v.normal = dsO.normal * ds1.normal;
 
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
